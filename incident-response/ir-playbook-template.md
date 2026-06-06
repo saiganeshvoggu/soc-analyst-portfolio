@@ -3,7 +3,7 @@
 Standard IR workflow template based on SOC operations 
 experience. Follows a Prepare → Identify → Contain → 
 Eradicate → Recover → Lessons Learned structure.
-
+ 
 ---
 
 ## Playbook: Failed Authentication / Brute Force Alert
