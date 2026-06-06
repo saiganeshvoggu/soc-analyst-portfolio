@@ -1,67 +1,71 @@
 # SOC Analyst Portfolio — Sai Ganesh Voggu
 
-CompTIA Security+ | MSc Data Science (University of Essex) | 
-Associate SOC Analyst @ NationsBenefits India
+> CompTIA Security+ CE | MSc Data Science (University of Essex) |
+> Associate SOC Analyst @ NationsBenefits India
 
 ---
 
-## About
+## About This Repository
 
 This repository documents my practical SOC experience, 
-detection methodology, and ongoing learning in cybersecurity 
-operations. It covers threat detection, incident response 
-workflows, DLP compliance, and vulnerability research.
+detection methodology, and cybersecurity workflows built 
+during professional work and continued self-study.
 
 ---
 
-## Professional Background
+## Professional Experience Summary
 
-- 9 months hands-on SOC experience at NationsBenefits India
-- Worked with SentinelOne, Arctic Wolf, Absolute Software, 
-  Microsoft 365 Defender, and Microsoft Purview
-- Authored SOC runbooks for authentication failures, 
-  BitLocker recovery, and SEV-C incident response
-- Managed DLP policies protecting PII across regulated 
-  data categories (SSN, UAN, payment card data)
+**Associate SOC Analyst — NationsBenefits India**
+*(Nov 2022 – Aug 2023)*
+
+- Monitored and triaged security alerts across endpoint 
+  and cloud environments using SentinelOne, Arctic Wolf, 
+  and Absolute Software
+- Reviewed and maintained DLP policies in Microsoft Purview 
+  protecting PII including SSN, UAN, and payment card data
+- Authored SOC runbooks for failed authentication, BitLocker 
+  recovery, and SEV-C incident response
+- Conducted CVE research across Microsoft 365 and ERP platforms
+- Managed mobile device access in Exchange Admin Centre
 - Assisted with Azure AD user management and conditional 
-  access policy reviews under senior supervision
+  access policy reviews
 
 ---
 
-## Repository Contents
+## Repository Structure
 
-### Threat Detection
-- MITRE ATT&CK tactic notes and detection logic
-- Common attack pattern documentation
+| Folder | Contents |
+|---|---|
+| `threat-detection/` | MITRE ATT&CK notes, detection logic |
+| `incident-response/` | IR playbook templates, runbook structure |
+| `vulnerability-research/` | CVE analysis template, research format |
+| `dlp-and-compliance/` | DLP policy notes, Microsoft Purview concepts |
 
-### Incident Response
-- IR playbook templates based on real SOC workflows
-- SEV-C response documentation structure
+---
 
-### Vulnerability Research
-- CVE analysis template and documentation format
-- Microsoft 365 and ERP vulnerability research notes
+## Tools & Technologies
 
-### DLP & Compliance
-- DLP policy structure and PII protection notes
-- Microsoft Purview configuration concepts
+| Category | Tools |
+|---|---|
+| Endpoint Security | SentinelOne, Arctic Wolf, Absolute Software |
+| Email & Cloud | Microsoft 365 Defender, Exchange Admin Centre, Purview |
+| Identity & Access | Azure Active Directory, Conditional Access, MFA |
+| Frameworks | MITRE ATT&CK, Cyber Kill Chain |
+| Cloud | AWS Solutions Architect – Associate, Microsoft Azure |
 
 ---
 
 ## Certifications
-- CompTIA Security+ CE (May 2025)
-- AWS Solutions Architect – Associate
-- Microsoft Student SOC Program Foundations (Sep 2025)
 
----
-
-## Currently Learning
-- Splunk Core (in progress)
-- Microsoft Sentinel (in progress)
-- TryHackMe SOC Level 1 path
+- ✅ CompTIA Security+ CE — May 2025
+- ✅ Microsoft SOC Program Foundations — Sep 2025
+- ✅ Mastercard Cybersecurity Simulation (Forage) — Sep 2025
+- ✅ Deloitte Cyber Job Simulation (Forage) — Sep 2025
+- ✅ Tata Cybersecurity Analyst Simulation (Forage) — Sep 2025
 
 ---
 
 ## Connect
-- LinkedIn: linkedin.com/in/saiganeshvoggu
-- Email: saiganeshvoggu8@gmail.com
+
+- 🔗 [LinkedIn](https://linkedin.com/in/saiganeshvoggu)
+- 📧 saiganeshvoggu8@gmail.com
