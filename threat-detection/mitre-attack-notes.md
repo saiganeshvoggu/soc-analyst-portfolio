@@ -1,77 +1,131 @@
-# MITRE ATT&CK — SOC Detection Notes
+# MITRE ATT&CK Detection Notes
 
-Reference notes on key MITRE ATT&CK tactics relevant 
-to Tier-1 SOC alert triage and incident response.
+Reference notes for SOC Tier-1 analysts covering key 
+ATT&CK tactics, detection sources, and investigation 
+steps. Based on alert patterns encountered using 
+SentinelOne and Microsoft 365 Defender.
 
----  
+---
+
+## Why MITRE ATT&CK Matters in SOC Work
+
+MITRE ATT&CK gives analysts a common language to describe 
+attacker behaviour. When you receive a SentinelOne alert, 
+mapping it to an ATT&CK technique tells you:
+- What the attacker is trying to do
+- What they likely did before this step
+- What they will likely do next
+
+This context is what separates reactive alert-closers 
+from analysts who understand attacker intent.
+
+---
 
 ## TA0001 — Initial Access
 
-**What it is:** Attacker attempts to get into the network.
+The attacker's first attempt to get inside the environment.
 
-**Common techniques:**
-- T1566 Phishing — malicious email attachments or links
-- T1190 Exploit Public-Facing Application
-- T1078 Valid Accounts — using stolen credentials
+**Most common techniques:**
 
-**What to look for in alerts:**
-- Unusual login locations or times
-- Email gateway alerts for suspicious attachments
-- Multiple failed logins followed by a success
+**T1566 — Phishing**  
+Malicious email with attachment or link. Most common 
+initial access vector in enterprise environments.  
+Detection: Email gateway alerts, user-reported phishing, 
+Microsoft Defender for Office 365 alerts
+
+**T1078 — Valid Accounts**  
+Using stolen or guessed credentials to log in legitimately.  
+Detection: Azure AD unusual sign-in alerts, login from 
+new location/device, failed logins followed by success
+
+**T1190 — Exploit Public-Facing Application**  
+Attacking internet-exposed services.  
+Detection: WAF alerts, IDS signatures, unusual traffic 
+patterns on perimeter systems
 
 ---
 
 ## TA0003 — Persistence
 
-**What it is:** Attacker maintains their foothold after 
-initial compromise.
+Attacker ensures they maintain access even after 
+password resets or reboots.
 
-**Common techniques:**
-- T1053 Scheduled Tasks — malicious tasks created
-- T1547 Registry Run Keys — auto-start on boot
-- T1136 Create Account — new unauthorized accounts
+**T1098 — Account Manipulation**  
+Adding attacker-controlled credentials to an existing 
+account or creating new accounts.  
+Detection: Azure AD new account creation alerts, 
+unexpected admin privilege grants, SentinelOne 
+process activity around net user commands
 
-**What to look for:**
-- New local accounts created outside IT workflows
-- Unusual scheduled tasks in Windows Event Logs
-- Registry modifications on endpoints
+**T1053 — Scheduled Task / Job**  
+Creating scheduled tasks to run malicious code 
+automatically.  
+Detection: Windows Event ID 4698 (task created), 
+SentinelOne behavioral detection on unusual 
+schtasks.exe activity
+
+---
+
+## TA0006 — Credential Access
+
+Attacker attempts to steal credentials to move further.
+
+**T1110 — Brute Force**  
+Repeated login attempts against one or many accounts.  
+Detection: Multiple failed logins in Azure AD, 
+SentinelOne network detection, Microsoft 365 
+identity protection alerts  
+Investigation: Check for password spray pattern 
+(many accounts, few attempts each) vs credential 
+stuffing (one account, many attempts)
+
+**T1003 — OS Credential Dumping**  
+Tools like Mimikatz used to extract credentials from 
+memory.  
+Detection: SentinelOne behavioral engine (high 
+confidence), LSASS access alerts, unusual 
+process injection activity
 
 ---
 
 ## TA0008 — Lateral Movement
 
-**What it is:** Attacker moves through the network to 
-reach target systems.
+Attacker moves from the initial compromised system 
+to reach higher-value targets.
 
-**Common techniques:**
-- T1021 Remote Services — RDP, SMB abuse
-- T1550 Pass the Hash — credential reuse
-- T1563 Remote Service Session Hijacking
+**T1021 — Remote Services**  
+Using RDP, SMB, or WinRM to access other systems.  
+Detection: SentinelOne network activity, unusual 
+RDP connections between workstations (workstation 
+to workstation RDP is almost always suspicious), 
+Azure AD sign-ins from unexpected devices
 
-**What to look for:**
-- Unusual RDP connections between workstations
-- Authentication attempts using same credentials 
-  across multiple systems
-- SentinelOne alerts for credential dumping tools
-
----
-
-## TA0040 — Impact
-
-**What it is:** Attacker disrupts, destroys, or 
-manipulates data/systems.
-
-**Common techniques:**
-- T1486 Data Encrypted for Impact (ransomware)
-- T1490 Inhibit System Recovery — deletes backups
-- T1485 Data Destruction
-
-**What to look for:**
-- Mass file rename/encryption activity on endpoints
-- Deletion of Volume Shadow Copies
-- Unusual process spawning from Office applications
+**T1550 — Use Alternate Authentication Material**  
+Pass-the-Hash or Pass-the-Ticket attacks.  
+Detection: SentinelOne behavioral, event log 
+anomalies, unexpected NTLM authentication patterns
 
 ---
 
-*These notes are based on MITRE ATT&CK v14 and 
-practical SOC experience.*
+## SentinelOne Alert Investigation Workflow
+
+Used during alert triage at NationsBenefits:
+
+1. Open alert in SentinelOne console
+2. Read the full alert name and classification 
+   (Malicious / Suspicious / Informational)
+3. Check the process tree — what spawned what?
+4. Identify the affected endpoint and owner
+5. Check the timeline — what happened before 
+   and after the alert?
+6. Map the activity to a MITRE ATT&CK technique
+7. Determine scope — is this isolated to one 
+   endpoint or is there lateral movement?
+8. Make escalation decision based on severity 
+   and scope
+
+---
+
+*Notes based on threat detection experience using 
+SentinelOne and Microsoft 365 Defender at 
+NationsBenefits India (2022–2023).*
