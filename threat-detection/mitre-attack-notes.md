@@ -3,7 +3,7 @@
 Reference notes on key MITRE ATT&CK tactics relevant 
 to Tier-1 SOC alert triage and incident response.
 
----
+---  
 
 ## TA0001 — Initial Access
 
