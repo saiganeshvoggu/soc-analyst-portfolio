@@ -1,131 +1,179 @@
 # Incident Response Playbooks
 
-SOC runbook templates based on real incident response 
-workflows at NationsBenefits India (Nov 2022 – Aug 2023).
+SOC Tier-1 runbooks based on real incident response 
+workflows at NB Healthcare Technologies (NationsBenefits 
+India), Nov 2022 – Aug 2023.
+
+Approximately 10 incidents were escalated to Tier-2 
+analysts and Information Security Engineers over the 
+course of the role. The playbooks below reflect the 
+actual investigation and response steps followed.
 
 ---
 
-## Playbook 1 — Failed Authentication / Brute Force
+## Playbook 1 — Failed Login Attempts / Brute Force
 
-**Severity level:** SEV-C (review) — escalate to SEV-B 
-if attack confirmed  
-**Detection sources:** SentinelOne, Microsoft 365 Defender, 
-Azure AD sign-in logs
+**Trigger:** Multiple failed authentication attempts  
+**Detection sources:** SentinelOne, Arctic Wolf, 
+Microsoft 365 Defender, Azure AD sign-in logs  
+**Initial severity:** SEV-C (review) — escalate to 
+SEV-B if attack pattern confirmed
 
----
+### Investigation Steps
 
-### Step 1 — Identify
+1. Pull the alert from Zoho Service Desk or the 
+   detection platform
+2. Note the username, source IP, timestamp, and 
+   number of failed attempts
+3. Determine if the account is active and belongs 
+   to a real user
+4. Check whether the source IP is internal or external
+5. Verify if any login succeeded after the failures
+6. Review Azure AD sign-in logs for the past 7 days
+7. Cross-reference source IP against VirusTotal 
+   and AbuseIPDB
+8. Check whether multiple accounts were targeted 
+   from the same IP (password spray indicator)
 
-- Note the username, source IP, timestamp, and alert source
-- Check if the account is active and belongs to a real user
-- Determine if the source IP is internal or external
-- Check whether any login succeeded after the failures
-- Review sign-in history for the past 7 days in Azure AD
-
-Key questions:
-- Is this a known user or a service account?
-- Did MFA trigger or was it bypassed?
-- Is the IP flagged in threat intelligence?
-
----
-
-### Step 2 — Analyse
-
-- Cross-reference source IP against VirusTotal and AbuseIPDB
-- Check if multiple accounts were targeted from the same IP 
-  (password spray pattern)
-- If a login succeeded — review what the account accessed 
-  immediately after
-- Check for any inbox rule creation or forwarding rules 
-  added (common post-compromise action)
-
----
-
-### Step 3 — Contain
+### Response Actions
 
 **If confirmed malicious:**
-- Disable the compromised account immediately
-- Block the source IP at the firewall or email gateway
+- Disable the affected account immediately
+- Block the source IP at the email gateway or firewall
 - Revoke active sessions in Azure AD
-- Force MFA re-registration
-- Notify account owner and IT team
-- Escalate to Tier-2 with full evidence package including 
-  log exports, IP details, and timeline
+- Force password reset and MFA re-registration
+- Notify the account owner's team lead
+- Escalate to Tier-2 with full evidence package:
+  log exports, IP details, timeline, account details
 
 **If likely false positive:**
-- Document findings in the ticket
+- Document findings in Zoho Service Desk
 - Note the pattern for future alert tuning
 - Close with false positive classification
 
----
-
-### Step 4 — Document
-
-Every incident ticket must contain:
-- Alert source and alert ID
-- Complete timeline of events
-- Source IP and geolocation
-- Actions taken at each step
-- Escalation decision and justification
-- Final resolution and classification
+### Escalation Criteria
+Escalate immediately if:
+- Login succeeded and suspicious post-login 
+  activity is detected
+- Multiple accounts targeted from the same source
+- Administrative or privileged account involved
+- Activity detected outside business hours from 
+  an unrecognized location
 
 ---
 
 ## Playbook 2 — BitLocker Recovery Request
 
-**Trigger:** User reports device locked, BitLocker 
+**Trigger:** User locked out of device, BitLocker 
 recovery key required  
-**Severity:** Low — administrative, not security incident  
-**Detection source:** Helpdesk ticket or direct user request
+**Severity:** Low — administrative workflow  
+**Detection source:** Zoho Service Desk helpdesk ticket
+
+### Investigation Steps
+
+1. Verify the request came through the official 
+   Zoho Service Desk channel
+2. Confirm the user's identity via HR records or 
+   IT asset management
+3. Verify the device asset tag belongs to the 
+   requesting user
+4. Check if the device is listed as active and 
+   compliant in Absolute
+
+### Response Actions
+
+1. Retrieve the BitLocker recovery key from 
+   Azure AD device management portal
+2. Deliver the key via a secure, audited channel 
+   only — never via email or chat
+3. Log the recovery in Zoho Service Desk:
+   - User name
+   - Device ID and asset tag
+   - Date and time
+   - Approving analyst name
+4. Follow up after 24 hours to confirm device 
+   access was restored
+
+**Security note:** BitLocker recovery requests are 
+a social engineering vector. Always independently 
+verify identity before issuing any recovery key.
 
 ---
 
-### Steps
+## Playbook 3 — Email Quarantine Investigation
 
-1. Verify user identity through HR records or IT asset 
-   management system
-2. Confirm the device asset tag belongs to the requesting 
-   user — do not issue keys for unverified devices
-3. Retrieve the BitLocker recovery key from Azure AD 
-   device management portal
-4. Deliver the key via a secure, audited channel only — 
-   never via email or chat
-5. Log the recovery event: user name, device ID, date, 
-   time, and approving analyst name
-6. Follow up after 24 hours to confirm device access 
-   restored successfully
+**Trigger:** Email flagged and quarantined by 
+Microsoft 365 Defender  
+**Detection source:** Microsoft 365 Security portal, 
+Zoho Service Desk user report
 
-**Security note:** BitLocker recovery requests are a 
-common social engineering vector. Always verify identity 
-independently before issuing keys.
+### Investigation Steps
 
----
+1. Access the quarantine queue in Microsoft 365 
+   Security portal
+2. Review the sender address and domain reputation
+3. Analyze email headers — check for spoofing, 
+   mismatched reply-to addresses
+4. Review the email subject and body for phishing 
+   indicators
+5. Check if the sender is a known vendor or 
+   internal contact
+6. Verify whether other users received the 
+   same email
 
-## Playbook 3 — SEV-C Alert Response
+### Response Actions
 
-**Severity:** SEV-C = review required, not yet confirmed 
-as an incident  
-**Target response time:** Within defined SLA window
+**If legitimate business email:**
+- Release from quarantine
+- Whitelist the sender if appropriate
+- Document the false positive
 
----
+**If confirmed malicious:**
+- Keep in quarantine — do not release
+- Block the sender domain at the email gateway
+- Check if any users clicked links before 
+  quarantine was applied
+- Escalate if link clicks or attachments 
+  were opened
 
-### Steps
-
-1. Open alert in the SIEM/EDR console
-2. Read the full alert context — do not action without 
-   understanding what triggered it
-3. Check asset details — who owns the device, what team 
-   are they on, is it a critical system?
-4. Pull relevant logs for the time window around the alert
-5. Apply the appropriate specific playbook (failed login, 
-   malware detection, DLP breach, etc.)
-6. Make a classification decision:
-   - False positive → document and close
-   - True positive, low risk → remediate and document
-   - True positive, elevated risk → escalate to Tier-2 
-     with full evidence
+### Escalation Criteria
+Escalate to Tier-2 if:
+- Attachment was opened by any user
+- Link was clicked before quarantine
+- Multiple users received the same phishing email
+- Email impersonates internal leadership
 
 ---
 
-*Based on SOC runbooks authored at NationsBenefits India 
-(2022–2023).*
+## General Escalation Criteria
+
+Escalate any incident to Tier-2 / Information 
+Security Engineers when:
+
+- Malware is detected or suspected on any endpoint
+- Account compromise is confirmed or suspected
+- Multiple users or systems are affected
+- Critical business systems are impacted
+- Administrative or privileged accounts are involved
+- Lateral movement indicators are present
+- The incident exceeds Tier-1 investigation capability
+
+---
+
+## Documentation Requirements
+
+Every incident ticket in Zoho Service Desk must contain:
+
+- Incident summary and alert source
+- Complete timeline of events
+- Source details (IP, user, device)
+- Actions taken at each step
+- Escalation decision and justification
+- Final resolution and classification
+- Lessons learned (for escalated incidents)
+
+---
+
+*Based on SOC incident response experience at NB 
+Healthcare Technologies (NationsBenefits India), 
+2022–2023.*
