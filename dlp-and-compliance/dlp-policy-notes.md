@@ -1,105 +1,126 @@
-# DLP Policy Notes — Microsoft Purview
+# DLP Policy Operations Notes — Microsoft Purview
 
-Practical notes based on DLP policy review and maintenance 
-at NationsBenefits India (Nov 2022 – Aug 2023).
-
----
-
-## What is DLP and Why It Matters
-
-Data Loss Prevention policies detect and prevent unauthorised 
-sharing or exposure of sensitive data. In a regulated 
-environment like healthcare benefits administration, DLP 
-is critical because the data includes SSNs, payment card 
-numbers, and government IDs — all of which carry legal 
-liability if exposed.
+Practical notes based on DLP operations at NB Healthcare 
+Technologies (NationsBenefits India), Nov 2022 – Aug 2023.
 
 ---
 
-## Sensitive Data Types Managed
+## Context
+
+NationsBenefits operates in the healthcare benefits space, 
+handling sensitive member data including SSNs, payment card 
+information, and employee records across a 2,000+ user 
+environment in India and the United States. DLP policy 
+management was a core daily responsibility within SOC 
+operations.
+
+---
+
+## Sensitive Data Types Protected
 
 | Data Type | Sensitivity | Regulatory Context |
 |---|---|---|
 | Social Security Number (SSN) | Critical | HIPAA, PII regulations |
-| Universal Account Number (UAN) | High | Indian labour regulations |
 | Credit / Debit Card Numbers | Critical | PCI-DSS |
-| Financial account information | High | Internal compliance policy |
+| Employee personal information | High | Internal policy, GDPR alignment |
+| Financial records | High | Internal compliance |
+| Internal business data | Medium | Confidentiality policy |
 
 ---
 
-## Microsoft Purview — Key Concepts
+## Microsoft Purview — Core Components
 
-### Policy Components
+### Policy Conditions
+What triggers a DLP alert:
+- Sensitive information type detected (e.g. SSN pattern match)
+- Volume threshold exceeded (e.g. 5+ credit card numbers)
+- External recipient detected on internal sensitive content
+- Unauthorized cloud storage destination
 
-**Conditions** — what triggers the policy:
-- Specific sensitive info type detected (e.g. credit card number)
-- Volume threshold (e.g. 10+ instances in one message)
-- Recipient type (internal vs external)
+### Policy Actions
+What happens when a condition is met:
+- **Block** — prevent the action completely
+- **Block with override** — user must provide justification
+- **Audit only** — log the activity without blocking
+- **Policy tip** — notify the user in real time
+- **Alert security team** — trigger SOC investigation queue
 
-**Actions** — what happens when triggered:
-- Block external sharing entirely
-- Block with override (user must justify)
-- Audit only — log without blocking
-- Send policy tip to the user
-- Alert the security team
-
-**Scope** — where the policy applies:
+### Policy Scope
+Where policies apply:
 - Exchange Online (email)
 - SharePoint and OneDrive
 - Microsoft Teams messages
-- Windows endpoints (via Defender)
+- Windows endpoints via Defender
 
 ---
 
-## Policy Review Process
+## DLP Investigation Workflow
 
-Steps followed during policy reviews at NationsBenefits:
+Used during daily SOC operations at NationsBenefits:
 
-1. Pull recent DLP match reports from Microsoft Purview 
-   compliance portal
-2. Identify high false-positive rules causing unnecessary 
-   business disruption
-3. Review threshold settings — adjust confidence levels 
-   or instance counts if needed
-4. Check scope — ensure policies cover all required 
-   workloads (Exchange, SharePoint, endpoints)
-5. Test any changes in audit mode before enforcing
-6. Document all changes with business justification
-7. Monitor match reports for 2 weeks post-change to 
-   confirm expected behaviour
+### Step 1 — Alert Review
+Pull the alert from Microsoft Purview compliance portal:
+- Which user triggered the alert?
+- Which file or message was involved?
+- Which policy and sensitive data type was matched?
+- What was the intended destination (internal/external)?
+- What time did the activity occur?
 
----
+### Step 2 — Validation
+Determine whether the activity was legitimate:
+- Was this a known business workflow (e.g. HR payroll file)?
+- Did the user have authorization for this transfer?
+- Is this a pattern or a one-time occurrence?
+- Cross-reference with the user's recent activity history
 
-## Common False Positive Scenarios Encountered
+### Step 3 — Communication
+If context is needed:
+- Contact the user's team lead first — not the user directly
+- Ask whether a business justification exists
+- Document the response received
 
-**HR bulk file transfers** — large employee data files 
-containing UAN numbers flagged during legitimate payroll 
-processing. Resolution: created scoped exception for 
-the HR shared mailbox.
+### Step 4 — Resolution
 
-**Test environments** — developers using dummy SSN-format 
-data in non-production systems triggering real DLP alerts. 
-Resolution: excluded specific SharePoint test sites from 
-the policy scope.
-
-**Finance team card processing** — internal finance 
-workflows involving payment card references blocked by 
-overly broad PCI rules. Resolution: adjusted instance 
-count threshold and added trusted group exception.
+| Outcome | Action Required |
+|---|---|
+| False positive | Document, tune policy threshold, close ticket |
+| Business justification approved | Document justification, close ticket, consider exception rule |
+| Policy violation confirmed | Escalate to senior analyst, initiate formal process |
+| Escalation required | Package evidence, escalate to Tier-2 with full context |
 
 ---
 
-## Lessons Learned
+## Common False Positive Scenarios
 
-- DLP policy management is iterative — set once is never 
-  the right approach
-- False positive reduction requires close collaboration 
-  between security and business teams
-- Audit mode before enforcement prevents business disruption
-- Documentation of every policy change is essential for 
-  audit trails
+**HR bulk file operations** — Payroll files containing employee 
+data triggering PII rules during legitimate monthly processing.
+
+**Finance team card references** — Internal finance workflows 
+involving payment references blocked by PCI rules.
+
+**Developer test data** — Non-production environments using 
+dummy data in SSN format triggering real DLP alerts.
+
+**Resolution approach:** Adjust confidence thresholds, add 
+scoped exceptions for specific groups or locations, or 
+implement allow-list rules after approval.
 
 ---
 
-*Based on hands-on experience with Microsoft Purview at 
-NationsBenefits India (2022–2023).*
+## Key Lessons from Operations
+
+- DLP is not a set-and-forget system — policies require 
+  regular review and tuning
+- High false positive rates erode user trust and cause 
+  alert fatigue in the SOC
+- Every policy change must be tested in audit mode before 
+  enforcement
+- Business context is essential — security and operations 
+  teams must communicate closely
+- All DLP incidents must be documented regardless of outcome 
+  for audit trail purposes
+
+---
+
+*Based on DLP operations experience at NB Healthcare 
+Technologies (NationsBenefits India), 2022–2023.*
