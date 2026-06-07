@@ -1,131 +1,134 @@
-# MITRE ATT&CK Detection Notes
+# Threat Detection Notes — SOC Operations
 
-Reference notes for SOC Tier-1 analysts covering key 
-ATT&CK tactics, detection sources, and investigation 
-steps. Based on alert patterns encountered using 
-SentinelOne and Microsoft 365 Defender.
+Detection reference based on alert triage experience 
+at NB Healthcare Technologies (NationsBenefits India).
+Primary detection platforms: SentinelOne, Arctic Wolf, 
+Microsoft 365 Defender, Zoho Service Desk.
 
----
-
-## Why MITRE ATT&CK Matters in SOC Work
-
-MITRE ATT&CK gives analysts a common language to describe 
-attacker behaviour. When you receive a SentinelOne alert, 
-mapping it to an ATT&CK technique tells you:
-- What the attacker is trying to do
-- What they likely did before this step
-- What they will likely do next
-
-This context is what separates reactive alert-closers 
-from analysts who understand attacker intent.
+Daily alert volume: 25–55 alerts across platforms.
 
 ---
 
-## TA0001 — Initial Access
+## Detection Platforms Used
 
-The attacker's first attempt to get inside the environment.
-
-**Most common techniques:**
-
-**T1566 — Phishing**  
-Malicious email with attachment or link. Most common 
-initial access vector in enterprise environments.  
-Detection: Email gateway alerts, user-reported phishing, 
-Microsoft Defender for Office 365 alerts
-
-**T1078 — Valid Accounts**  
-Using stolen or guessed credentials to log in legitimately.  
-Detection: Azure AD unusual sign-in alerts, login from 
-new location/device, failed logins followed by success
-
-**T1190 — Exploit Public-Facing Application**  
-Attacking internet-exposed services.  
-Detection: WAF alerts, IDS signatures, unusual traffic 
-patterns on perimeter systems
+| Platform | Primary Use |
+|---|---|
+| SentinelOne | Endpoint threat detection, behavioral analysis, device investigations |
+| Arctic Wolf | Managed detection, network monitoring, threat correlation |
+| Microsoft 365 Defender | Email security, identity alerts, cloud app monitoring |
+| Zoho Service Desk | Alert ticketing, investigation tracking, operational reporting |
 
 ---
 
-## TA0003 — Persistence
+## Common Alert Categories Encountered
 
-Attacker ensures they maintain access even after 
-password resets or reboots.
+### Failed Login Attempts
+**Volume:** High — most frequent daily alert type  
+**MITRE Technique:** T1110 — Brute Force  
+**Detection sources:** Azure AD, SentinelOne, Arctic Wolf
 
-**T1098 — Account Manipulation**  
-Adding attacker-controlled credentials to an existing 
-account or creating new accounts.  
-Detection: Azure AD new account creation alerts, 
-unexpected admin privilege grants, SentinelOne 
-process activity around net user commands
-
-**T1053 — Scheduled Task / Job**  
-Creating scheduled tasks to run malicious code 
-automatically.  
-Detection: Windows Event ID 4698 (task created), 
-SentinelOne behavioral detection on unusual 
-schtasks.exe activity
+Investigation approach:
+1. Check number of attempts and time window
+2. Identify if single account or multiple accounts 
+   targeted (spray vs stuffing)
+3. Verify source IP — internal or external
+4. Check if any attempt succeeded
+5. Review post-login activity if login succeeded
 
 ---
 
-## TA0006 — Credential Access
+### Suspicious Authentication Activity
+**MITRE Technique:** T1078 — Valid Accounts  
+**Detection sources:** Azure AD sign-in logs, 
+Microsoft 365 Defender
 
-Attacker attempts to steal credentials to move further.
-
-**T1110 — Brute Force**  
-Repeated login attempts against one or many accounts.  
-Detection: Multiple failed logins in Azure AD, 
-SentinelOne network detection, Microsoft 365 
-identity protection alerts  
-Investigation: Check for password spray pattern 
-(many accounts, few attempts each) vs credential 
-stuffing (one account, many attempts)
-
-**T1003 — OS Credential Dumping**  
-Tools like Mimikatz used to extract credentials from 
-memory.  
-Detection: SentinelOne behavioral engine (high 
-confidence), LSASS access alerts, unusual 
-process injection activity
+Indicators to check:
+- Login from new country or region
+- Login from new device not previously seen
+- Login at unusual time for the user
+- MFA bypass attempt
 
 ---
 
-## TA0008 — Lateral Movement
+### Endpoint Security Events
+**MITRE Techniques:** T1059 (Command Execution), 
+T1055 (Process Injection), T1003 (Credential Dumping)  
+**Detection source:** SentinelOne behavioral engine
 
-Attacker moves from the initial compromised system 
-to reach higher-value targets.
-
-**T1021 — Remote Services**  
-Using RDP, SMB, or WinRM to access other systems.  
-Detection: SentinelOne network activity, unusual 
-RDP connections between workstations (workstation 
-to workstation RDP is almost always suspicious), 
-Azure AD sign-ins from unexpected devices
-
-**T1550 — Use Alternate Authentication Material**  
-Pass-the-Hash or Pass-the-Ticket attacks.  
-Detection: SentinelOne behavioral, event log 
-anomalies, unexpected NTLM authentication patterns
-
----
-
-## SentinelOne Alert Investigation Workflow
-
-Used during alert triage at NationsBenefits:
-
+Investigation approach:
 1. Open alert in SentinelOne console
-2. Read the full alert name and classification 
-   (Malicious / Suspicious / Informational)
-3. Check the process tree — what spawned what?
-4. Identify the affected endpoint and owner
-5. Check the timeline — what happened before 
-   and after the alert?
-6. Map the activity to a MITRE ATT&CK technique
-7. Determine scope — is this isolated to one 
-   endpoint or is there lateral movement?
-8. Make escalation decision based on severity 
-   and scope
+2. Review the full process tree — what spawned what?
+3. Identify the affected endpoint and device owner
+4. Check timeline — what happened before and after?
+5. Determine if isolated to one endpoint or spreading
+6. Make containment or escalation decision
 
 ---
 
-*Notes based on threat detection experience using 
-SentinelOne and Microsoft 365 Defender at 
-NationsBenefits India (2022–2023).*
+### Phishing and Email Threats
+**MITRE Technique:** T1566 — Phishing  
+**Detection source:** Microsoft 365 Defender, 
+user-reported via Zoho Service Desk
+
+Investigation approach:
+1. Review quarantined email headers
+2. Check sender domain reputation
+3. Analyze links and attachments
+4. Determine if any user interacted with content
+5. Block sender and escalate if interaction confirmed
+
+---
+
+### DLP Incidents
+**MITRE Technique:** T1048 — Exfiltration Over 
+Alternative Protocol  
+**Detection source:** Microsoft Purview
+
+Investigation approach:
+1. Identify user, file, and destination
+2. Determine if transfer was authorized
+3. Contact team lead for business justification
+4. Resolve as false positive, approved, or violation
+
+---
+
+### BitLocker and Device Compliance
+**Detection source:** Absolute Software, Zoho Service Desk  
+
+Monitoring activities:
+- Device compliance status checks
+- BitLocker encryption status validation
+- Recovery key request processing
+- Device location and activity tracking
+
+---
+
+## MITRE ATT&CK Quick Reference
+
+| Technique ID | Name | Relevance to NB Environment |
+|---|---|---|
+| T1110 | Brute Force | Most common daily alert — login attempts |
+| T1078 | Valid Accounts | Post-compromise credential use |
+| T1566 | Phishing | Email gateway quarantine alerts |
+| T1048 | Exfiltration | DLP policy triggers in Purview |
+| T1059 | Command Execution | SentinelOne behavioral detections |
+| T1098 | Account Manipulation | Azure AD unauthorized changes |
+
+---
+
+## Alert Triage Workflow
+
+Standard process followed for every alert:
+
+1. Open ticket in Zoho Service Desk
+2. Identify alert source and classification
+3. Pull relevant logs and context
+4. Apply the appropriate investigation playbook
+5. Determine: false positive, true positive, or escalation
+6. Document findings in the ticket
+7. Close or escalate with full evidence package
+
+---
+
+*Based on threat detection operations at NB Healthcare 
+Technologies (NationsBenefits India), 2022–2023.*
